@@ -3,92 +3,102 @@ layout: page
 # The Home page layout
 ---
 
-{% assign pinned = site.posts | where: "pin", "true" %}
-{% assign default = site.posts | where_exp: "item", "item.pin != true and item.hidden != true" %}
+<!-- Show portfolio posts (Up to 3, with a 'see all' link if more exist) -->
 
-{% assign posts = "" | split: "" %}
+{% assign portfolio_posts = site.posts | where_exp: "item", "item.portfolio ==
+true" %} {% assign portfolio_num = portfolio_posts.size %} {% assign max_num = 3
+%}
 
-<!-- Get pinned posts -->
-
-{% assign offset = paginator.page | minus: 1 | times: paginator.per_page %}
-{% assign pinned_num = pinned.size | minus: offset %}
-
-{% if pinned_num > 0 %}
-  {% for i in (offset..pinned.size) limit: pinned_num %}
-    {% assign posts = posts | push: pinned[i] %}
-  {% endfor %}
-{% else %}
-  {% assign pinned_num = 0 %}
-{% endif %}
-
-<!-- Get default posts -->
-
-{% assign default_beg = offset | minus: pinned.size %}
-
-{% if default_beg < 0 %}
-  {% assign default_beg = 0 %}
-{% endif %}
-
-{% assign default_num = paginator.posts | size | minus: pinned_num  %}
-{% assign default_end = default_beg | plus: default_num | minus: 1 %}
-
-{% if default_num > 0 %}
-  {% for i in (default_beg..default_end) %}
-    {% assign posts = posts | push: default[i] %}
-  {% endfor %}
-{% endif %}
-
-<div id="post-list">
-
-{% for post in posts %}
-
-  <div class="post-preview">
-    <h1>
-      <a href="{{ post.url | relative_url }}">{{ post.title }}</a>
-    </h1>
-
-    <div class="post-content">
-      <p>
-        {% include no-linenos.html content=post.content %}
-        {{ content | markdownify | strip_html | truncate: 200 | escape }}
-      </p>
-    </div>
-
-    <div class="post-meta text-muted d-flex">
-      <div class="mr-auto">
-
-        <!-- posted date -->
-        <i class="far fa-calendar fa-fw"></i>
-        {% include datetime.html date=post.date %}
-
-        <!-- categories -->
-        {% if post.categories.size > 0 %}
-          <i class="far fa-folder-open fa-fw"></i>
-          <span>
-          {% for category in post.categories %}
-            {{ category }}
-            {%- unless forloop.last -%},{%- endunless -%}
-          {% endfor %}
-          </span>
+<div class="post-list">
+  <h1>My Work</h1>
+  {% for post in portfolio_posts %}
+  <div class="post-preview-container">
+    <div class="post-preview">
+      <h1>
+        <a href="{{ post.url | relative_url }}">
+          {{ post.title }}
+        </a>
+        {% if post.flair %}
+        <div class="post-flair">{{ post.flair }}</div>
         {% endif %}
+      </h1>
 
+      <div class="post-content">
+        <p>
+          {% include no-linenos.html content=post.content %} {{ content |
+          markdownify | strip_html | truncate: 200 }}
+        </p>
       </div>
 
-      {% if post.pin %}
-      <div class="pin">
-        <i class="fas fa-thumbtack fa-fw"></i>
-        <span>{{ site.data.locales[site.lang].post.pin_prompt }}</span>
+      <div class="post-meta text-muted d-flex justify-content-between">
+        <div>
+          <!-- Maybe put start/end date here -->
+        </div>
       </div>
-      {% endif %}
+      <!-- .post-meta -->
+    </div>
+    <!-- .post-preview -->
+    <a href="{{ post.url | relative_url }}">
+      <img
+        src="/{{post.icon}}"
+        alt="{{post.alttext}}"
+        onerror="this.style.display='none'"
+      />
+    </a>
+  </div>
+  <!-- .post-preview-container -->
+  {% endfor %}
+  <div class="see-all">
+    <a href="{{ '/' | relative_url }}mywork/">See all</a>
+  </div>
+</div>
+<!-- .post-list -->
 
-    </div> <!-- .post-meta -->
+<!-- Show blog posts (Up to 3, with a 'see all' link if more exist) -->
 
-  </div> <!-- .post-review -->
+{% assign blog_posts = site.posts | where_exp: "item", "item.blog == true" %} {%
+assign blog_num = blog_posts.size %} {% assign max_num = 3 %}
 
-{% endfor %}
+<div class="post-list">
+  <h1>Blogs</h1>
+  {% for post in blog_posts %}
 
-</div> <!-- #post-list -->
+  <div class="post-preview-container">
+    <div class="post-preview">
+      <h1>
+        <a href="{{ post.url | relative_url }}">{{ post.title }}</a>
+        {% if post.flair %}
+        <div class="post-flair">{{ post.flair }}</div>
+        {% endif %}
+      </h1>
 
-{% if paginator.total_pages > 0 %}
-  {% include post-paginator.html %}
-{% endif %}
+      <div class="post-content">
+        <p>
+          {% include no-linenos.html content=post.content %} {{ content |
+          markdownify | strip_html | truncate: 200 }}
+        </p>
+      </div>
+
+      <div class="post-meta text-muted d-flex justify-content-between">
+        <div>
+          <!-- Maybe put start/end date here -->
+        </div>
+      </div>
+      <!-- .post-meta -->
+    </div>
+    <!-- .post-preview -->
+    <a href="{{ post.url | relative_url }}">
+      <img
+        src="{{post.icon}}"
+        alt="{{post.alttext}}"
+        onerror="this.style.display='none'"
+      />
+    </a>
+  </div>
+  <!-- .post-preview-container -->
+  {% endfor %}
+  <div class="see-all">
+    <a href="{{ '/' | relative_url }}blogs/">See all</a>
+  </div>
+</div>
+<!-- .post-list -->
