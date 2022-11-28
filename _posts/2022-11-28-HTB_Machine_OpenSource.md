@@ -1,5 +1,5 @@
 ---
-title: My CyberSanta2021 Walkthrough
+title: WriteUp for Easy Linux Machine OpenSource
 tags: [ctf, hackthebox, web, machines]
 date: 2022-11-28 20:00:00 +0300
 categories: [HackTheBox, CTF, Machines]
@@ -47,26 +47,26 @@ nmap -p22,80 -A -Pn 10.10.11.164 -v
 
 Приложение на 80 порту предлагает загрузить свои файлы, а также на главной странице есть ссылка на исходники приложения.
 
-![Web1 | center](/assets/img/OpenSource/web1.png)
+![Web1 | center](/../../assets/img/OpenSource/web1.png)
 
 В исходниках находим интересный момент. При обращении к загруженному файлу, путь после директории `/_uploads/` передаётся в функцию `get_file_name()`, которая передаёт значение переменной `path` уже в функцию `recursive_replace()`. И после фильтрации структуры `“../”` переменная path передается в функцию `send_file()`, которая вызывает уязвимую функцию `os.path.join()`, особенность этой функции в том, что если один из аргументов этой функции является абсолютным путем, то есть имеет полный путь, то все идущие до него аргументы отбрасываются.
 
 Код в файле _views.py_:
-![Web2 | center](/assets/img/OpenSource/web2.png)
+![Web2 | center](/../../assets/img/OpenSource/web2.png)
 Функция _get_file_name()_ из файла _utils.py_:
-![Web3 | center](/assets/img/OpenSource/web3.png)
+![Web3 | center](/../../assets/img/OpenSource/web3.png)
 Функция _recursive_replace()_ в файле _utils.py_:
-![Web4 | center](/assets/img/OpenSource/web4.png)
+![Web4 | center](/../../assets/img/OpenSource/web4.png)
 Описание функции `os.path.join()` из документации:
-![Web5 | center](/assets/img/OpenSource/web5.png)
+![Web5 | center](/../../assets/img/OpenSource/web5.png)
 
 
 Таким образом можно добиться, например такой уязвимости как LFI (Local File Inclusion). Так как контролируемая нами переменная является последней, то при передачи абсолютного пути файла, будет открыт именно этот файл. Обратимся к директории `/uploads/..//etc/passwd`, и получим файл `/etc/passwd`.
-![Web6 | center](/assets/img/OpenSource/web6.png)
+![Web6 | center](/../../assets/img/OpenSource/web6.png)
 
 Дальнейшие попытки раскрутить эту **LFI** до **RCE** не увенчались успехом, и я обратил внимание, на то, что при загрузке файла есть точно такая же уязвимость, но мы уже контролируем переменную `file_name` (см. Figure 7), благодаря чему есть возможность перезаписывать текущие файлы. Значит план такой, загрузить свой файл с абсолютным путём – `/app/app/views.py`, добавив в конец новый путь, с бэкдором.
 
-![Web7 | center](/assets/img/OpenSource/web7.png)
+![Web7 | center](/../../assets/img/OpenSource/web7.png)
 
 > _Примечание. При первых попытках грузить свой файл `/app/app/views.py` (который я изначально взял из скачанных исходников) ломал тачку, и я очень долго тупил и не понимал, что я делаю не так. Но потом прочитал текущий файл `/app/app/views.py` с помощью, продемонстрированной ранее LFI, и понял, что они немного отличаются :D_
 
@@ -75,15 +75,15 @@ nmap -p22,80 -A -Pn 10.10.11.164 -v
 
 Дописываю в конец оригинального файла следующий код:
 
-![Web8 | center](/assets/img/OpenSource/web8.png)
+![Web8 | center](/../../assets/img/OpenSource/web8.png)
 
 Перехватываем запрос с загрузкой файла с помощью Burp'a, и меняем название файла:
 
-![Web9 | center](/assets/img/OpenSource/web9.png)
+![Web9 | center](/../../assets/img/OpenSource/web9.png)
 
 Теперь подымаем у себя локально слушатель (я использую команду `nc -lvnp 9999`) и в директории `/hollywarrior1-shell` в веб-приложении передаём в параметр `cmd` пейлоад с реверс шеллом. Пейлоад с реверс шеллом генерировал с помощью сайта – [https://www.revshells.com/](https://www.revshells.com/). Я использовал пейлоад Python3 #2. Передаём полезную нагрузку в параметр `cmd` и успешно получаем коннект:
 
-![Web10 | center](/assets/img/OpenSource/web10.png)
+![Web10 | center](/../../assets/img/OpenSource/web10.png)
 
 Только оболочка сейчас неудобная и кривая. Для стабильной оболочки используем следующие команды:
 
@@ -103,18 +103,18 @@ export TERM=xterm
 
 Обычно из контейнера есть доступ к основному хосту, узнаем по какому айпишнику доступен основной хост с помощью команды `ip r`:
 
-![Web11 | center](/assets/img/OpenSource/web11.png)
+![Web11 | center](/../../assets/img/OpenSource/web11.png)
 
 На тачке есть утилита `nc`, просканим открытые порты на хосте 172.17.0.1 с помощью неё. Команда будет следующая:
 ```bash
 for i in `seq 0 65536`; do nc -zv 172.17.0.1 $i; done
 ```
 Открыты следующие порты:
-![Web12 | center](/assets/img/OpenSource/web12.png)
+![Web12 | center](/../../assets/img/OpenSource/web12.png)
 
 
 Путём ручного перебора открытых портов, узнаём, что на 3000 порту висит веб морда сервиса Gitea. А порты 6000-6007 копии 80 порта.
-![Web13 | center](/assets/img/OpenSource/web13.png)
+![Web13 | center](/../../assets/img/OpenSource/web13.png)
 
 Так как доступ к `172.17.0.1:3000` есть только с этого хоста, чтобы нормально посмотреть и потыкаться в эту веб морду будем пробрасывать туннель с помощью инструмента _chisel_. Подымаем питон http сервер на своём локальном хосте, в директории с бинарником _chisel_ следующей командой:
 
@@ -148,10 +148,10 @@ chmod +x /tmp/chisel
 
 Теперь при обращении к локальному хосту на 3000-ый порт, все запросы будут туннелироваться на 3000-ый порт удалённой машины 172.17.0.1, а мостом выступает хост 172.17.0.5. Веб морда сервиса Gitea:
 
-![Web14 | center](/assets/img/OpenSource/web14.png)
+![Web14 | center](/../../assets/img/OpenSource/web14.png)
 
 Находим, что на этом сервисе есть пользователь dev01. 
-![Web15 | center](/assets/img/OpenSource/web15.png)
+![Web15 | center](/../../assets/img/OpenSource/web15.png)
 
 Попытки брута пароля, поиск публичных эксплойтов не дали своих плодов и на этом этапе я застрял. Застрял очень на долго...
 
@@ -159,35 +159,35 @@ chmod +x /tmp/chisel
 > _P.S. в первый раз её не увидел так как SublimeText при открытии директории по дефолту не показывает скрытые файлы. _
 
 При виде этой директории первое, что хочется сделать, это посмотреть коммиты и логи изменений:
-![Web16 | center](/assets/img/OpenSource/web16.png)
+![Web16 | center](/../../assets/img/OpenSource/web16.png)
 
 Перебирая все коммиты вручную по очереди (_да я пока не придумал способа лучше_), находим в предпоследнем креды для пользователя dev01:
-![Web17 | center](/assets/img/OpenSource/web17.png)
+![Web17 | center](/../../assets/img/OpenSource/web17.png)
 
 Заходим на Gitea с этими кредами и в репозитории _home_backup_ скачиваем приватный ssh ключ пользователя dev01:
-![Web18 | center](/assets/img/OpenSource/web18.png)
+![Web18 | center](/../../assets/img/OpenSource/web18.png)
 
 Меняем ключу права командой `chmod 600 id_rsa` и подключаемся по ssh за пользователя dev01 с помощью этого приватного ключа. И забираем флаг пользователя
 
-![Web19 | center](/assets/img/OpenSource/web19.png)
+![Web19 | center](/../../assets/img/OpenSource/web19.png)
 
 ## Root flag
 
 Запуск тулзы [LinPEAS](https://github.com/carlospolop/PEASS-ng/tree/master/linPEAS) не дал результатов, поэтому запускаю [pspy64](https://github.com/DominicBreuker/pspy), чтобы отследить запускаемые процессы на системе в "live" режиме. И видим, что от рута запускается bash скрипт `git-sync`:
-![Web20 | center](/assets/img/OpenSource/web20.png)
+![Web20 | center](/../../assets/img/OpenSource/web20.png)
 
 Посмотрим исходники скрипта:
-![Web21 | center](/assets/img/OpenSource/web21.png)
+![Web21 | center](/../../assets/img/OpenSource/web21.png)
 
 Чуть-чуть погуглив, узнал о существовании гит хуков (git hooks). Так как у нас есть право на запись в директории `/home/dev01/` из которой выполняются команды в этом скрипте, можно создать так называемый "pre-commit hook", который исполнится перед командой `git commit`. Создаём этот хук и записываем в него полезную нагрузку, которая скопирует бинарь `/bin/bash` и присвоит ему бит SUID.
-![Web22 | center](/assets/img/OpenSource/web22.png)
+![Web22 | center](/../../assets/img/OpenSource/web22.png)
 
 >_«Справка: бит `SUID`. Когда у файла установлен атрибут setuid (S-атрибут), обычный пользователь, запускающий этот файл, получает повышение прав до пользователя – владельца файла в рамках запущенного процесса. После получения повышенных прав приложение может выполнять задачи, которые недоступны обычному пользователю. Из‑за возможности состояния гонки многие операционные системы игнорируют S-атрибут, установленный shell скриптам.»_ — скопировано из райтапов RalfHacker ([Telegram](https://t.me/RalfHackerChannel) & [Xakep.ru](https://xakep.ru/author/ralfhacker/))
 
 Теперь ждём пока рут снова запустит скрипт и выполнит наш хук. После чего забираем флаг рута:
 
-![Web23 | center](/assets/img/OpenSource/web23.png)
+![Web23 | center](/../../assets/img/OpenSource/web23.png)
 
 ---
 
-![End | center](/assets/img/OpenSource/end.png)
+![End | center](/../../assets/img/OpenSource/end.png)
