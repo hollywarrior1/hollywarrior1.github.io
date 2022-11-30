@@ -3,102 +3,85 @@ layout: page
 # The Home page layout
 ---
 
-<!-- Show portfolio posts (Up to 3, with a 'see all' link if more exist) -->
+{% assign pinned = site.posts | where: "pin", "true" %}
+{% assign default = site.posts | where_exp: "item", "item.pin != true and item.hidden != true" %}
 
-{% assign portfolio_posts = site.posts | where_exp: "item", "item.portfolio ==
-true" %} {% assign portfolio_num = portfolio_posts.size %} {% assign max_num = 3
-%}
+{% assign posts = "" | split: "" %}
 
-<div class="post-list">
-  <h1>My Work</h1>
-  {% for post in portfolio_posts %}
-  <div class="post-preview-container">
-    <div class="post-preview">
-      <h1>
-        <a href="{{ post.url | relative_url }}">
-          {{ post.title }}
-        </a>
-        {% if post.flair %}
-        <div class="post-flair">{{ post.flair }}</div>
-        {% endif %}
-      </h1>
+<!-- Get pinned posts -->
 
-      <div class="post-content">
-        <p>
-          {% include no-linenos.html content=post.content %} {{ content |
-          markdownify | strip_html | truncate: 200 }}
-        </p>
-      </div>
+{% assign offset = paginator.page | minus: 1 | times: paginator.per_page %}
+{% assign pinned_num = pinned.size | minus: offset %}
 
-      <div class="post-meta text-muted d-flex justify-content-between">
-        <div>
-          <!-- Maybe put start/end date here -->
-        </div>
-      </div>
-      <!-- .post-meta -->
-    </div>
-    <!-- .post-preview -->
-    <a href="{{ post.url | relative_url }}">
-      <img
-        src="/{{post.icon}}"
-        alt="{{post.alttext}}"
-        onerror="this.style.display='none'"
-      />
-    </a>
-  </div>
-  <!-- .post-preview-container -->
+{% if pinned_num > 0 %}
+  {% for i in (offset..pinned.size) limit: pinned_num %}
+    {% assign posts = posts | push: pinned[i] %}
   {% endfor %}
-  <div class="see-all">
-    <a href="{{ '/' | relative_url }}mywork/">See all</a>
-  </div>
-</div>
-<!-- .post-list -->
+{% else %}
+  {% assign pinned_num = 0 %}
+{% endif %}
 
-<!-- Show blog posts (Up to 3, with a 'see all' link if more exist) -->
+<!-- Get default posts -->
 
-{% assign blog_posts = site.posts | where_exp: "item", "item.blog == true" %} {%
-assign blog_num = blog_posts.size %} {% assign max_num = 3 %}
+{% assign default_beg = offset | minus: pinned.size %}
 
-<div class="post-list">
-  <h1>Blogs</h1>
-  {% for post in blog_posts %}
+{% if default_beg < 0 %}
+  {% assign default_beg = 0 %}
+{% endif %}
 
-  <div class="post-preview-container">
-    <div class="post-preview">
-      <h1>
-        <a href="{{ post.url | relative_url }}">{{ post.title }}</a>
-        {% if post.flair %}
-        <div class="post-flair">{{ post.flair }}</div>
-        {% endif %}
-      </h1>
+{% assign default_num = paginator.posts | size | minus: pinned_num  %}
+{% assign default_end = default_beg | plus: default_num | minus: 1 %}
 
-      <div class="post-content">
-        <p>
-          {% include no-linenos.html content=post.content %} {{ content |
-          markdownify | strip_html | truncate: 200 }}
-        </p>
-      </div>
-
-      <div class="post-meta text-muted d-flex justify-content-between">
-        <div>
-          <!-- Maybe put start/end date here -->
-        </div>
-      </div>
-      <!-- .post-meta -->
-    </div>
-    <!-- .post-preview -->
-    <a href="{{ post.url | relative_url }}">
-      <img
-        src="{{post.icon}}"
-        alt="{{post.alttext}}"
-        onerror="this.style.display='none'"
-      />
-    </a>
-  </div>
-  <!-- .post-preview-container -->
+{% if default_num > 0 %}
+  {% for i in (default_beg..default_end) %}
+    {% assign posts = posts | push: default[i] %}
   {% endfor %}
-  <div class="see-all">
-    <a href="{{ '/' | relative_url }}blogs/">See all</a>
+{% endif %}
+
+<div id="post-list">
+
+{% for post in posts %}
+
+<div class="post-preview-container">
+  <div class="post-preview">
+    <h1>
+      <a href="{{ post.url | relative_url }}">
+        {{ post.title }}
+      </a>
+      {% if post.flair %}
+      <div class="post-flair">{{ post.flair }}</div>
+      {% endif %}
+    </h1>
+
+    <div class="post-content">
+      <p>
+        {% include no-linenos.html content=post.content %} {{ content |
+        markdownify | strip_html | truncate: 200 }}
+      </p>
+    </div>
+
+    <div class="post-meta text-muted d-flex justify-content-between">
+      <div>
+        <!-- Maybe put start/end date here -->
+      </div>
+    </div>
+    <!-- .post-meta -->
   </div>
+  <!-- .post-preview -->
+  <a href="{{ post.url | relative_url }}">
+    <img
+      src="/{{post.icon}}"
+      alt="{{post.alttext}}"
+      onerror="this.style.display='none'"
+    />
+  </a>
 </div>
-<!-- .post-list -->
+<!-- .post-preview-container -->
+
+{% endfor %}
+
+</div> <!-- #post-list -->
+
+{% if paginator.total_pages > 0 %}
+  {% include post-paginator.html %}
+{% endif %}
