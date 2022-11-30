@@ -4,7 +4,7 @@
 
 .pagination {
   color: var(--btn-patinator-text-color);
-  font-family: "Lato", sans-serif;
+  font-family: Lato, sans-serif;
 
   a:hover {
     text-decoration: none;
@@ -22,97 +22,44 @@
       border-radius: 50%;
       border: 1px solid var(--btn-paginator-border-color);
       background-color: var(--button-bg);
+
       &:hover {
         background-color: var(--btn-paginator-hover-color);
       }
     }
+
     &.active {
       .page-link {
-        background-color: var(--btn-active-bg);
-        border-color: var(--btn-active-border-color);
-        box-shadow: 0 0 8px 0 var(--btn-paginator-shadow) !important;
+        background-color: var(--btn-paginator-hover-color);
         color: var(--btn-text-color);
       }
     }
+
     &.disabled {
       cursor: not-allowed;
+
       .page-link {
         color: rgba(108, 117, 125, 0.57);
         border-color: var(--btn-paginator-border-color);
         background-color: var(--button-bg);
       }
     }
+
     &:first-child .page-link,
     &:last-child .page-link {
       border-radius: 50%;
     }
-  } // .page-item
-} // .pagination
+  } /* .page-item */
+} /* .pagination */
 
-.post-list {
+#post-list {
   margin-top: 1rem;
-  padding-bottom: 1.5rem;
-
-  .see-all {
-    margin-left: 1rem;
-    margin-right: 1rem;
-  }
-
-  .post-preview-container {
-    &:hover > a {
-      border-color: #fff;
-    }
-
-    > a {
-      display: block;
-      width: 24rem;
-      height: 6rem;
-      border-radius: 50%;
-      border: 2px solid #b6b6b6;
-      overflow: hidden;
-      transform: translateZ(0); // fixed the zoom in Safari
-      -webkit-transition: border-color 0.35s ease-in-out;
-      -moz-transition: border-color 0.35s ease-in-out;
-      transition: border-color 0.35s ease-in-out;
-    }
-
-    img {
-      object-fit: cover;
-      overflow: hidden;
-      vertical-align: middle;
-      margin-left: auto;
-      margin-right: auto;
-      width: 100%;
-      height: 100%;
-      -webkit-transition: transform 0.5s;
-      -moz-transition: transform 0.5s;
-      transition: transform 0.5s;
-
-      &:hover {
-        -ms-transform: scale(1.2);
-        -moz-transform: scale(1.2);
-        -webkit-transform: scale(1.2);
-        transform: scale(1.2);
-      }
-    }
-
-    margin-left: 1rem;
-    margin-right: 1rem;
-    display: flex;
-    flex-direction: row;
-    border-bottom: 1px solid var(--main-border-color);
-    justify-content: center;
-    align-items: center;
-  }
+  padding-right: 0.5rem;
 
   .post-preview {
-    width: 200%;
     padding-top: 1.5rem;
     padding-bottom: 1rem;
-
-    a {
-      padding-right: 0.5rem;
-    }
+    border-bottom: 1px solid var(--main-border-color);
 
     a:hover {
       @extend %link-hover;
@@ -126,9 +73,27 @@
     .post-meta {
       i {
         font-size: 0.73rem;
+
+        &:not(:first-child) {
+          margin-left: 1.2rem;
+        }
       }
-      span:not(:last-child) {
-        margin-right: 1.2rem;
+
+      em {
+        @extend %normal-font-style;
+      }
+
+      .pin {
+        i {
+          -webkit-transform: rotate(45deg);
+          transform: rotate(45deg);
+          padding-left: 3px;
+          color: var(--pin-color);
+        }
+
+        span {
+          display: none;
+        }
       }
     }
 
@@ -136,6 +101,7 @@
       margin-top: 0.6rem;
       margin-bottom: 0.6rem;
       color: var(--post-list-text-color);
+
       > p {
         /* Make preview shorter on the homepage */
         margin: 0;
@@ -146,30 +112,8 @@
         -webkit-box-orient: vertical;
       }
     }
-
-    .post-flair {
-      vertical-align: middle;
-      font-family: monospace;
-      display: inline;
-      font-size: 1rem;
-      color: #aaaaaa;
-      background: #000000;
-      border-radius: 0.2rem;
-      padding: 0.1rem 0.2rem 0.2rem 0.2rem;
-    }
-
-    .pin {
-      > i {
-        transform: rotate(45deg);
-        padding-left: 3px;
-        color: var(--pin-color);
-      }
-      > span {
-        display: none;
-      }
-    }
-  } // .post-preview
-} // #post-list
+  } /* .post-preview */
+} /* #post-list */
 
 /* Hide SideBar and TOC */
 @media all and (max-width: 830px) {
@@ -188,6 +132,7 @@
 @media all and (min-width: 831px) {
   #post-list {
     margin-top: 1.5rem;
+
     .post-preview .post-meta {
       .pin {
         background: var(--pin-bg);
@@ -222,10 +167,10 @@
     .page-index {
       display: none;
     }
-  } // .pagination
+  } /* .pagination */
 }
 
-/* Pannel hidden */
+/* Panel hidden */
 @media all and (max-width: 1200px) {
   #post-list {
     padding-right: 0;
