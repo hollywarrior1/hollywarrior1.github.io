@@ -5,6 +5,7 @@ date: 2022-11-28 20:00:00 +0300
 categories: [HackTheBox, CTF, Machines]
 icon: /assets/img/OpenSource.png
 alttext: Some work I did
+flair: HTB/Linux/Easy
 image:
   path: /assets/img/OpenSource/Banner.png
   width: 1000   # in pixels

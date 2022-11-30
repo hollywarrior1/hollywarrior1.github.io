@@ -5,6 +5,7 @@ date: 2021-12-20 20:00:00 +0300
 categories: [HackTheBox, CTF]
 icon: /assets/img/santa_anime.png
 alttext: Some work I did
+flair: HTB/CTF
 image:
   path: /assets/img/CyberSanta-cover-img.png
   width: 1000   # in pixels
