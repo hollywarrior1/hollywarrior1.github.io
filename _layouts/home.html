@@ -47,11 +47,6 @@ layout: page
     <h1>
       <a href="{{ post.url | relative_url }}">
         {{ post.title }}
-        <img
-      src="{{post.icon}}"
-      alt="{{post.alttext}}"
-      onerror="this.style.display='none'"
-    />
       </a>
       {% if post.flair %}
       <div class="post-flair">{{ post.flair }}</div>
@@ -73,13 +68,13 @@ layout: page
     <!-- .post-meta -->
   </div>
   <!-- .post-preview -->
-  <!-- <a href="{{ post.url | relative_url }}">
+  <a href="{{ post.url | relative_url }}">
     <img
       src="{{post.icon}}"
       alt="{{post.alttext}}"
       onerror="this.style.display='none'"
     />
-  </a> -->
+  </a>
 </div>
 <!-- .post-preview-container -->
 
